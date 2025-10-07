@@ -18,9 +18,14 @@ provider "aws" {
   }
 }
 
+locals {
+  the_zip = "${path.module}/lambda-layer-fastapi.zip"
+}
+
 
 resource "aws_lambda_layer_version" "fastapi_layer" {
-  filename          = "${path.module}/lambda-layer-fastapi.zip"  # путь к локальному архиву
+  filename          = local.the_zip
+  source_code_hash = filebase64sha256(local.the_zip)
   layer_name        = "fastapi-layer"
   compatible_runtimes = ["python3.9", "python3.10", "python3.11", "python3.12", "python3.13"]
   description       = "FastAPI 0.118.0 +Magnum+dependencies for AWS Lambda Python"
