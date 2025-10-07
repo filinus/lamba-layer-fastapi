@@ -241,3 +241,5 @@ tags
 
 !/lambda-layer-fastapi.zip
 !/.env
+
+.idea/
