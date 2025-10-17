@@ -1,0 +1,38 @@
+# filename: .github/workflows/build-layer.yml
+# version: 1.1
+name: Build AWS Lambda Layer for x86_64 and arm64
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build layer for ${{ matrix.arch }}
+        run: |
+          docker build \
+            --build-arg ARCH=${{ matrix.arch }} \
+            --platform linux/${{ matrix.arch == 'arm64' && 'arm64' || 'amd64' }} \
+            -t lambda-layer-${{ matrix.arch }} .
+
+      - name: Copy ZIP from container lambda-layer-${{ matrix.arch }}
+        run: |
+          CID=$(docker create lambda-layer-${{ matrix.arch }})
+          docker cp "$CID:/lambda-layer-fastapi.zip" ./lambda-layer-fastapi-${{ matrix.arch }}.zip
+          docker rm "$CID"
+
+      - name: Upload artifact for ${{ matrix.arch }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-layer-fastapi-${{ matrix.arch }}
+          path: lambda-layer-fastapi-${{ matrix.arch }}.zip
