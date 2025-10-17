@@ -1,4 +1,4 @@
-FROM amazon/aws-lambda-python
+FROM amazon/aws-lambda-python:latest-x86_64
 
 #RUN ls -la /var/lang/lib/python3.13/site-packages
 
