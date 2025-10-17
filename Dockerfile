@@ -1,6 +1,8 @@
-FROM amazon/aws-lambda-python:latest-x86_64
+ARG ARCH=x86_64
 
-#RUN ls -la /var/lang/lib/python3.13/site-packages
+FROM amazon/aws-lambda-python:latest-${ARCH}
+
+RUN echo "Building for architecture: ${ARCH}"
 
 RUN dnf -y --nodocs --noplugins install zip && dnf clean all && rm -rf /var/cache/dnf
 
@@ -8,13 +10,15 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install \
-    --platform manylinux2014_x86_64 \
-    --target=package \
-    --implementation cp \
-    --only-binary=:all: \
-    -r requirements.txt \
-    -t /opt/python/
+RUN PLATFORM_TAG=$([ "${ARCH}" = "arm64" ] && echo "manylinux2014_aarch64" || echo "manylinux2014_x86_64") && \
+    echo "Using platform tag: ${PLATFORM_TAG}" && \
+    pip install \
+      --platform ${PLATFORM_TAG} \
+      --implementation cp \
+      --only-binary=:all: \
+      --no-cache-dir \
+      -r requirements.txt \
+      -t /opt/python/
 
 RUN cd /opt/python \
     && python -m compileall -o 2 -b . \
