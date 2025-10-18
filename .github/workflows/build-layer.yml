@@ -1,5 +1,3 @@
-# filename: .github/workflows/build-layer.yml
-# version: 1.3
 name: Build AWS Lambda Layer for x86_64 and arm64
 
 on:
@@ -12,7 +10,7 @@ jobs:
     strategy:
       matrix:
         arch: [x86_64, arm64]
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm64' || 'ubuntu-24.04' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +27,7 @@ jobs:
       - name: Copy ZIP from container lambda-layer-${{ matrix.arch }}
         run: |
           CID=$(docker create lambda-layer-${{ matrix.arch }})
-          docker cp "$CID:/app/lambda-layer-fastapi.zip" ./lambda-layer-fastapi-${{ matrix.arch }}.zip
+          docker cp "$CID:/app/layer.zip" ./lambda-layer-fastapi-${{ matrix.arch }}.zip
           docker rm "$CID"
 
       - name: Upload artifact for ${{ matrix.arch }}
