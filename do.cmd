@@ -1,11 +1,21 @@
-set ARCH=
-if "%PROCESSOR_ARCHITECTURE%"=="AMD64" set ARCH=x86_64
-if "%PROCESSOR_ARCHITECTURE%"=="ARM64" set ARCH=arm64
-if "%ARCH%"=="" (
-    echo Unknown architecture: %PROCESSOR_ARCHITECTURE%
+docker --version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Docker is not installed or not running.
     exit /b 1
 )
 
-docker build --build-arg ARCH=%ARCH%  -t lambda-layer-fastapi-builder:%ARCH% .
-docker rm temp_container2 2>nul & docker create --name temp_container2 lambda-layer-fastapi-builder:%ARCH%
-docker cp temp_container2:/app/layer.zip ./lambda-layer-fastapi.zip
+REM  X86_64
+docker build --platform linux/amd64 ^
+    --build-arg ARCH=x86_64 ^
+    -t lambda-layer-fastapi-builder:x86_64 .
+
+docker rm temp_container2 2>nul & docker create --name temp_container2 lambda-layer-fastapi-builder:x86_64
+docker cp temp_container2:/app/layer.zip ./lambda-layer-fastapi-amd64.zip
+
+REM  ARM64
+docker build --platform linux/arm64 ^
+    --build-arg ARCH=arm64 ^
+    -t lambda-layer-fastapi-builder:arm64 .
+
+docker rm temp_container2 2>nul & docker create --name temp_container2 lambda-layer-fastapi-builder:arm64
+docker cp temp_container2:/app/layer.zip ./lambda-layer-fastapi-arm64.zip

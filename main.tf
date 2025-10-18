@@ -19,35 +19,42 @@ provider "aws" {
 }
 
 locals {
-  the_zip = "${path.module}/lambda-layer-fastapi.zip"
+  fastapi_layers = {
+    x86_64 = {
+      zip   = "lambda-layer-fastapi-amd64.zip"
+      desc  = "FastAPI + deps for x86_64"
+    }
+    arm64 = {
+      zip   = "lambda-layer-fastapi-arm64.zip"
+      desc  = "FastAPI + deps for arm64"
+    }
+  }
 }
-
 
 resource "aws_lambda_layer_version" "fastapi_layer" {
-  filename          = local.the_zip
-  source_code_hash = filebase64sha256(local.the_zip)
+  for_each = local.fastapi_layers
+  filename          = each.value.zip
+  source_code_hash = filebase64sha256(each.value.zip)
   layer_name        = "fastapi-layer"
   compatible_runtimes = ["python3.9", "python3.10", "python3.11", "python3.12", "python3.13"]
-  description       = "FastAPI 0.118.0 +Magnum+dependencies for AWS Lambda Python"
-  compatible_architectures = ["x86_64"]
+  description       = "FastAPI 0.118.0 +Magnum+dependencies for AWS Lambda Python | ${each.key}"
+  compatible_architectures = [each.key]
 }
 
-output "lambda_layer_arn" {
-  value = aws_lambda_layer_version.fastapi_layer.arn
+output "fastapi_layers" {
+  value = {  for k, v in aws_lambda_layer_version.fastapi_layer : k => v.arn  }
 }
 
-data "aws_lambda_layer_version" "fastapi_layer" {
+data aws_lambda_layer_version "reverse_lookup" {
+  for_each = local.fastapi_layers
   layer_name = "fastapi-layer"
-  compatible_architecture = "x86_64"
+  compatible_architecture = each.key
 }
 
-output "latest_fastapi_layer_generic_arn" {
-  value = data.aws_lambda_layer_version.fastapi_layer.layer_arn
+output "layer_arns" {
+  description = "Map of architecture to existing FastAPI layer ARNs"
+  value = {
+    for arch, data_ref in data.aws_lambda_layer_version.reverse_lookup :
+    arch => data_ref.arn
+  }
 }
-
-output "latest_fastapi_layer_exact_arn" {
-  value = data.aws_lambda_layer_version.fastapi_layer.arn
-}
-
-
-
