@@ -1,7 +1,7 @@
 ARG ARCH=x86_64
-
 FROM amazon/aws-lambda-python:latest-${ARCH}
 
+ARG ARCH=x86_64
 RUN echo "Building for architecture: ${ARCH}"
 
 RUN dnf -y --nodocs --noplugins install zip && dnf clean all && rm -rf /var/cache/dnf

@@ -50,11 +50,3 @@ data aws_lambda_layer_version "reverse_lookup" {
   layer_name = "fastapi-layer"
   compatible_architecture = each.key
 }
-
-output "layer_arns" {
-  description = "Map of architecture to existing FastAPI layer ARNs"
-  value = {
-    for arch, data_ref in data.aws_lambda_layer_version.reverse_lookup :
-    arch => data_ref.arn
-  }
-}
