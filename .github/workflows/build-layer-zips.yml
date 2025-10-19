@@ -1,8 +1,6 @@
-name: Build AWS Lambda Layer for x86_64 and arm64
+name: Build AWS Lambda Layer Zip-s for x86_64 and arm64
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
