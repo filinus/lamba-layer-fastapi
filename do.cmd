@@ -1,8 +1,12 @@
-docker --version >nul 2>&1
+@echo off
+
+docker info >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Docker is not installed or not running.
     exit /b 1
 )
+
+echo [OK] Docker is available.
 
 REM  X86_64
 docker build ^
