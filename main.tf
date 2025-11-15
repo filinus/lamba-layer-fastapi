@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source = "hashicorp/aws" # Specify the source of the AWS provider
-      version = "~> 6.3.0"        # Use a version of the AWS provider that is compatible with version
+      version = "~> 6.21.0"        # terraform init -upgrade  if necessary
     }
   }
 }
@@ -36,7 +36,7 @@ resource "aws_lambda_layer_version" "fastapi_layer" {
   filename          = each.value.zip
   source_code_hash = filebase64sha256(each.value.zip)
   layer_name        = "fastapi-layer"
-  compatible_runtimes = ["python3.10", "python3.11", "python3.12", "python3.13"]
+  compatible_runtimes = ["python3.10", "python3.11", "python3.12", "python3.13", "python3.14"]
   description       = "FastAPI 0.119.0 +Magnum+dependencies for AWS Lambda Python | ${each.key}"
   compatible_architectures = [each.key]
 }
